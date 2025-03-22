@@ -84,3 +84,5 @@ export const removeFavorite = async (id, token) => {
     throw error;
   }
 };
+
+

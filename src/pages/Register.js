@@ -5,22 +5,39 @@ import { useNavigate, Link } from 'react-router-dom';
 const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({}); // Store specific errors
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({}); // Clear previous errors
+
     try {
       await register({ email, password });
       alert('Registration successful! Please log in.');
       navigate('/login');
     } catch (error) {
-      alert('Registration failed! Please try again.');
+      console.log("Backend Error Response:", error.response?.data);
+
+      if (error.response) {
+        const data = error.response.data;
+
+        if (data.errors) {
+          setErrors(data.errors); // Handle field-specific errors
+        } else if (data.error) {
+          setErrors({ general: data.error }); // Handle general error
+        }
+      } else {
+        setErrors({ general: 'Registration failed! Please try again.' });
+      }
     }
   };
 
   return (
     <div className="container">
       <h2>Register</h2>
+      {errors.general && <div className="alert alert-danger">{errors.general}</div>}
+
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label>Email</label>
@@ -31,7 +48,9 @@ const Register = () => {
             onChange={(e) => setEmail(e.target.value)} 
             required 
           />
+          {errors.email && <small className="text-danger">{errors.email}</small>}
         </div>
+
         <div className="mb-3">
           <label>Password</label>
           <input 
@@ -41,7 +60,9 @@ const Register = () => {
             onChange={(e) => setPassword(e.target.value)} 
             required 
           />
+          {errors.password && <small className="text-danger">{errors.password}</small>}
         </div>
+
         <button type="submit" className="btn btn-primary">Register</button>
       </form>
 
@@ -53,3 +74,4 @@ const Register = () => {
 };
 
 export default Register;
+

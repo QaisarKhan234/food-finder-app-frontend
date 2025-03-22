@@ -12,9 +12,9 @@
 //     try {
 //       const data = await login({ email, password });
 //       console.log(data)
-//       // localStorage.setItem('token', data.accesstoken);
-//       // console.log('Saved token:', localStorage.getItem('token'))
-//       navigate('/favorites');
+//       localStorage.setItem('token', data.accesstoken);
+//       console.log('Saved token:', localStorage.getItem('token'))
+//       navigate('/');
 //     } catch (error) {
 //       alert('Login failed! Please check your credentials.');
 //     }
@@ -56,40 +56,54 @@
 
 // export default Login;
 
-
 import React, { useState, useContext } from 'react';
 import { login } from '../api/api';
 import { useNavigate, Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext'; // Import AuthContext
+import { AuthContext } from '../context/AuthContext';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({}); // Store specific errors
   const navigate = useNavigate();
-  const { login: loginUser } = useContext(AuthContext); // Get login function from context
+  const { login: loginUser } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({}); // Clear previous errors
+
     try {
       const data = await login({ email, password });
-      console.log('API Response:', data); // Double-check the API response
+      console.log('API Response:', data);
 
       if (data && data.accesstoken) {
         loginUser(data); // Save token to AuthContext and localStorage
-        console.log('Saved token:', localStorage.getItem('token')); // Verify token is saved
         navigate('/');
-      } else {
-        console.error('No access token received.');
       }
     } catch (error) {
-      console.error('Login error:', error.message);
-      alert('Login failed! Please check your credentials.');
+      console.log('Backend Error Response:', error.response?.data);
+
+      if (error.response) {
+        const data = error.response.data;
+
+        if (data.errors) {
+          setErrors(data.errors); // Handle field-specific errors
+        } else if (data.error) {
+          setErrors({ general: data.error }); // Handle general error
+        }
+      } else {
+        setErrors({ general: 'Login failed! Please try again.' });
+      }
     }
   };
 
   return (
     <div className="container">
       <h2>Login</h2>
+
+      {/* General Error Message */}
+      {errors.general && <div className="alert alert-danger">{errors.general}</div>}
+
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label>Email</label>
@@ -100,7 +114,9 @@ const Login = () => {
             onChange={(e) => setEmail(e.target.value)} 
             required 
           />
+          {errors.email && <small className="text-danger">{errors.email}</small>}
         </div>
+
         <div className="mb-3">
           <label>Password</label>
           <input 
@@ -110,7 +126,9 @@ const Login = () => {
             onChange={(e) => setPassword(e.target.value)} 
             required 
           />
+          {errors.password && <small className="text-danger">{errors.password}</small>}
         </div>
+
         <button type="submit" className="btn btn-primary">Login</button>
       </form>
 

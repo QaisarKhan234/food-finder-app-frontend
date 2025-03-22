@@ -4,7 +4,6 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Favorites from './pages/Favorites';
-// import BookDetails from './pages/BookDetails';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoutes';
 
@@ -18,7 +17,6 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
-          {/* <Route path="/books/:id" element={<BookDetails />} /> */}
         </Routes>
       </div>
     </Router>
